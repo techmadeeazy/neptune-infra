@@ -1,0 +1,14 @@
+{
+  "name": "neptune-infra",
+  "version": "0.1.0",
+  "private": true,
+  "description": "docker-compose, network/deploy config for Neptune Platform — no app code, this package.json exists only for commit-message tooling.",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "husky": "^9.1.7"
+  }
+}

@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (shared between neptune-api and neptune-admin, each
+  # connecting with its own least-privilege role — see init-scripts/)
+  postgres:
+    image: postgres:15-alpine
+    container_name: neptune-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: neptune
+      POSTGRES_USER: neptune
+      POSTGRES_PASSWORD: neptune_secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neptune"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (Cache, Queue, Pub/Sub)
+  redis:
+    image: redis:7-alpine
+    container_name: neptune-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Elasticsearch (Search Engine - Production target). Runs here too so local
+  # dev can test against the real engine when needed; Meilisearch below stays
+  # the default for day-to-day local dev since Elasticsearch is heavier to run.
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: neptune-elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # Meilisearch (Search Engine - local dev default; lightweight stand-in for
+  # Elasticsearch per docker/search abstraction in neptune-api)
+  meilisearch:
+    image: getmeili/meilisearch:v1.6
+    container_name: neptune-meilisearch
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_ENV: development
+      MEILI_MASTER_KEY: neptune_search_key
+      MEILI_NO_ANALYTICS: true
+    volumes:
+      - meilisearch_data:/meili_data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO (S3-compatible storage - Development)
+  minio:
+    image: minio/minio:latest
+    container_name: neptune-minio
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Console
+    environment:
+      MINIO_ROOT_USER: neptune_minio
+      MINIO_ROOT_PASSWORD: neptune_minio_secret
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # MinIO Setup (creates buckets on startup)
+  minio-setup:
+    image: minio/mc:latest
+    container_name: neptune-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set neptune http://minio:9000 neptune_minio neptune_minio_secret;
+      mc mb --ignore-existing neptune/neptune-uploads;
+      mc mb --ignore-existing neptune/neptune-documents;
+      mc anonymous set download neptune/neptune-uploads;
+      exit 0;
+      "
+
+  # MailHog (Email testing - Development)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: neptune-mailhog
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # nginx — host-based separation between admin.neptune.local (IP-allowlisted)
+  # and app.neptune.local / api.neptune.local (public). Proxies to the three
+  # app repos running on the host (pnpm dev / php artisan serve), not to
+  # containers — those apps aren't dockerized here. See README for the
+  # required /etc/hosts entries.
+  nginx:
+    image: nginx:alpine
+    container_name: neptune-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/allowlist.conf:/etc/nginx/allowlist.conf:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  meilisearch_data:
+    driver: local
+  minio_data:
+    driver: local
+
+networks:
+  default:
+    name: neptune-network
