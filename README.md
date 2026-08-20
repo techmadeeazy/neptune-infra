@@ -21,12 +21,15 @@ schema-level `CREATE` — it owns migrations, so it needs DDL rights;
 
 After the first `php artisan migrate` in `neptune-admin` (and after any
 migration that adds a table `neptune-api` needs), run
-`init-scripts/02-grants-post-migration.sql` manually:
+`scripts/02-grants-post-migration.sql` manually:
 
-    docker exec -i neptune-postgres psql -U neptune -d neptune < init-scripts/02-grants-post-migration.sql
+    docker exec -i neptune-postgres psql -U neptune -d neptune < scripts/02-grants-post-migration.sql
 
-It isn't auto-run — Postgres init-scripts only fire once, before any
-Laravel migration exists, so the tables aren't there yet at that point.
+It deliberately lives in `scripts/`, not `init-scripts/` — anything in
+`init-scripts/` is mounted to Postgres's `/docker-entrypoint-initdb.d` and
+auto-runs on first volume creation, before any Laravel migration exists, so
+a script assuming the tables already exist can't live there (it broke the
+container's first boot once already).
 Row-Level Security on `invoices`/`payments`/`payouts` lands the same way
 once those tables exist.
 
