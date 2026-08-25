@@ -30,3 +30,9 @@ GRANT SELECT ON vessels TO neptune_api_role;
 -- rejection_reason, reviewed_by, or reviewed_at directly - that's the
 -- moderation action, neptune-admin only. No UPDATE grant here on purpose.
 GRANT SELECT, INSERT, DELETE ON vessel_photos TO neptune_api_role;
+
+-- Same reasoning for vessel_documents: no UPDATE, moderation is
+-- neptune-admin's alone. document_types is admin-managed reference data,
+-- read-only here, same shape as the vessel classification tables.
+GRANT SELECT, INSERT, DELETE ON vessel_documents TO neptune_api_role;
+GRANT SELECT ON document_types TO neptune_api_role;
