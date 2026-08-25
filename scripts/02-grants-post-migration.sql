@@ -25,3 +25,8 @@ GRANT SELECT ON vessel_types, tonnage_bands, dp_classes, operational_certificati
 -- only neptune-admin ever writes it, on Stage 1 approval (PRD A1.5).
 GRANT SELECT, INSERT, UPDATE, DELETE ON vessel_drafts TO neptune_api_role;
 GRANT SELECT ON vessels TO neptune_api_role;
+
+-- Owners upload/delete their own vessel photos, but never set status,
+-- rejection_reason, reviewed_by, or reviewed_at directly - that's the
+-- moderation action, neptune-admin only. No UPDATE grant here on purpose.
+GRANT SELECT, INSERT, DELETE ON vessel_photos TO neptune_api_role;
