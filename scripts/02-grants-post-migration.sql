@@ -15,3 +15,13 @@
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON users, user_roles, companies, company_members TO neptune_api_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON kyc_documents TO neptune_api_role;
+
+-- Vessel classification reference tables are admin-managed only; neptune-api
+-- reads them to populate the vessel registration form's dropdowns.
+GRANT SELECT ON vessel_types, tonnage_bands, dp_classes, operational_certifications TO neptune_api_role;
+
+-- Vessel draft CRUD (registration, rates, consumption declaration) lives in
+-- neptune-api while a vessel is in draft. `vessels` is read-only here -
+-- only neptune-admin ever writes it, on Stage 1 approval (PRD A1.5).
+GRANT SELECT, INSERT, UPDATE, DELETE ON vessel_drafts TO neptune_api_role;
+GRANT SELECT ON vessels TO neptune_api_role;
