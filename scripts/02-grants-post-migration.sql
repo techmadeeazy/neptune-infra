@@ -100,3 +100,8 @@ GRANT SELECT ON invoices, invoice_lines, payments, payment_allocations TO neptun
 -- A payout is approved and settled in neptune-admin, so no UPDATE here.
 GRANT SELECT, INSERT, UPDATE ON bank_accounts TO neptune_api_role;
 GRANT SELECT, INSERT ON payouts TO neptune_api_role;
+
+-- What the platform has earned in commission. Written by neptune-admin
+-- when a payment is allocated. The API reads it so a payout is charged
+-- the rate the commission was actually earned at.
+GRANT SELECT ON platform_income TO neptune_api_role;
