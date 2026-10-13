@@ -58,3 +58,16 @@ GRANT SELECT, INSERT, DELETE ON offline_bookings TO neptune_api_role;
 -- append-only.
 GRANT SELECT, INSERT, UPDATE ON vessel_captains, ctrac_logs TO neptune_api_role;
 GRANT SELECT, INSERT ON ctrac_log_edits TO neptune_api_role;
+
+-- Charter lifecycle (2026-10-14). A finished charter's row is moved from
+-- charters to charter_history by neptune-admin, with the same id, so the
+-- API has to be able to read it there. It never writes to it.
+GRANT SELECT ON charter_history TO neptune_api_role;
+
+-- The status log gets a row from the API for each step it takes
+-- (confirmed, extension requested or answered, cancelled). Append-only.
+GRANT SELECT, INSERT ON charter_status_history TO neptune_api_role;
+
+-- Platform-wide rules set by finance admins, such as how charter days are
+-- counted for estimates. Read-only here.
+GRANT SELECT ON platform_settings TO neptune_api_role;
