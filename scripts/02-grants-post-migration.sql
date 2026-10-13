@@ -36,3 +36,25 @@ GRANT SELECT, INSERT, DELETE ON vessel_photos TO neptune_api_role;
 -- read-only here, same shape as the vessel classification tables.
 GRANT SELECT, INSERT, DELETE ON vessel_documents TO neptune_api_role;
 GRANT SELECT ON document_types TO neptune_api_role;
+
+-- Owner-set standby/blocked periods (PRD A4) are created and removed in
+-- neptune-api. No UPDATE on purpose: a period is replaced by deleting it
+-- and adding a new one, so nothing can quietly move its dates around.
+GRANT SELECT, INSERT, DELETE ON vessel_availability_periods TO neptune_api_role;
+
+-- RFQ, charter and offline booking tables (PRD B1-B7). These were missing
+-- from this file until the first real end-to-end run against a fresh
+-- database showed neptune-api had no access to any of them. Each grant is
+-- only what the API's repositories actually do: offers and notes are
+-- append-only, RFQs and charters are never deleted, and an offline booking
+-- is removed rather than edited.
+GRANT SELECT, INSERT, UPDATE ON rfqs, charters, charter_extensions TO neptune_api_role;
+GRANT SELECT, INSERT ON rfq_offers, rfq_notes, charter_notes TO neptune_api_role;
+GRANT SELECT, INSERT, DELETE ON offline_bookings TO neptune_api_role;
+
+-- Captain assignment and C-TRAC logs (PRD C1). An assignment is ended by
+-- setting unassigned_at and a log can be edited inside its 48 hour window,
+-- so both need UPDATE, but neither is ever deleted. The edit history is
+-- append-only.
+GRANT SELECT, INSERT, UPDATE ON vessel_captains, ctrac_logs TO neptune_api_role;
+GRANT SELECT, INSERT ON ctrac_log_edits TO neptune_api_role;
