@@ -84,7 +84,10 @@ GRANT SELECT, INSERT, UPDATE ON user_signatures TO neptune_api_role;
 -- Daily ROB reports (PRD C2). Sent by the Vessel Master and editable
 -- inside the 48 hour window. Approval is neptune-admin's alone, but it is
 -- a column on the same row, so the API is trusted not to write it.
-GRANT SELECT, INSERT, UPDATE ON rob_reports, rob_report_lines TO neptune_api_role;
+GRANT SELECT, INSERT, UPDATE ON rob_reports TO neptune_api_role;
+-- A correction replaces the report's lines as a set, which needs DELETE.
+-- The report row itself is never deleted.
+GRANT SELECT, INSERT, DELETE ON rob_report_lines TO neptune_api_role;
 
 -- Co-booking requests (PRD B3). Raised and answered through the API.
 GRANT SELECT, INSERT, UPDATE ON co_booking_requests TO neptune_api_role;
