@@ -71,3 +71,29 @@ GRANT SELECT, INSERT ON charter_status_history TO neptune_api_role;
 -- Platform-wide rules set by finance admins, such as how charter days are
 -- counted for estimates. Read-only here.
 GRANT SELECT ON platform_settings TO neptune_api_role;
+
+-- On-Hire and Off-Hire certificates (PRD C3/C4). neptune-admin creates
+-- the draft and its lines. The Vessel Master and the Charterer fill it in
+-- and sign it through the API, so it reads and updates but never creates
+-- or deletes.
+GRANT SELECT, UPDATE ON hire_certificates, hire_certificate_lines TO neptune_api_role;
+
+-- A person's uploaded signature image. One row each, replaced in place.
+GRANT SELECT, INSERT, UPDATE ON user_signatures TO neptune_api_role;
+
+-- Daily ROB reports (PRD C2). Sent by the Vessel Master and editable
+-- inside the 48 hour window. Approval is neptune-admin's alone, but it is
+-- a column on the same row, so the API is trusted not to write it.
+GRANT SELECT, INSERT, UPDATE ON rob_reports, rob_report_lines TO neptune_api_role;
+
+-- Co-booking requests (PRD B3). Raised and answered through the API.
+GRANT SELECT, INSERT, UPDATE ON co_booking_requests TO neptune_api_role;
+
+-- Finance (PRD D). Invoices and payments are made by finance admins in
+-- neptune-admin. The API only shows them to the people they belong to.
+GRANT SELECT ON invoices, invoice_lines, payments, payment_allocations TO neptune_api_role;
+
+-- Owners and brokers manage their own bank accounts and ask for payouts.
+-- A payout is approved and settled in neptune-admin, so no UPDATE here.
+GRANT SELECT, INSERT, UPDATE ON bank_accounts TO neptune_api_role;
+GRANT SELECT, INSERT ON payouts TO neptune_api_role;
