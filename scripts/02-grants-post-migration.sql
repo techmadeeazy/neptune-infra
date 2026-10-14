@@ -108,3 +108,8 @@ GRANT SELECT ON platform_income TO neptune_api_role;
 
 -- Terms put forward on a co-booking request, by either side. Append-only.
 GRANT SELECT, INSERT ON co_booking_offers TO neptune_api_role;
+
+-- Owner invitations (PRD A7.1 Mode 2) are made in neptune-admin. The API
+-- reads one to check it was sent to the person accepting it, then asks
+-- neptune-admin to hand over the vessels. It never writes the table.
+GRANT SELECT ON owner_invitations TO neptune_api_role;
