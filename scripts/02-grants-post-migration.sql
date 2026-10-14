@@ -105,3 +105,6 @@ GRANT SELECT, INSERT ON payouts TO neptune_api_role;
 -- when a payment is allocated. The API reads it so a payout is charged
 -- the rate the commission was actually earned at.
 GRANT SELECT ON platform_income TO neptune_api_role;
+
+-- Terms put forward on a co-booking request, by either side. Append-only.
+GRANT SELECT, INSERT ON co_booking_offers TO neptune_api_role;
