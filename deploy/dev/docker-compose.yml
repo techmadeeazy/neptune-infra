@@ -1,0 +1,110 @@
+# Neptune on the shared dev server (137.184.28.207), beside the Regency
+# stack. Images are built by each repo's CI and pulled from GHCR, so nothing
+# is compiled here. Postgres is the server's own (host) Postgres 16, not a
+# container. Settings and secrets live in api.env and admin.env next to this
+# file, which git ignores; see README.md.
+#
+# Memory caps keep Neptune from crowding the Regency services on a 4 GB box.
+
+name: neptune
+
+x-admin: &admin
+  image: ghcr.io/techmadeeazy/neptune-admin:${NEPTUNE_TAG:-dev}
+  env_file: admin.env
+  restart: unless-stopped
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  depends_on:
+    - neptune-redis
+  networks:
+    - neptune
+
+services:
+  neptune-api:
+    image: ghcr.io/techmadeeazy/neptune-api:${NEPTUNE_TAG:-dev}
+    container_name: neptune-api
+    env_file: api.env
+    environment:
+      NODE_OPTIONS: --max-old-space-size=160
+    restart: unless-stopped
+    mem_limit: 256m
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - neptune-redis
+      - neptune-meilisearch
+    networks:
+      - neptune
+
+  neptune-admin:
+    <<: *admin
+    container_name: neptune-admin
+    mem_limit: 384m
+
+  neptune-admin-worker:
+    <<: *admin
+    container_name: neptune-admin-worker
+    command: ["php", "artisan", "queue:work", "redis", "--sleep=3", "--tries=3", "--max-jobs=500", "--memory=128"]
+    mem_limit: 192m
+
+  neptune-redis:
+    image: redis:7-alpine
+    container_name: neptune-redis
+    # Queued jobs live here, so nothing is ever evicted to make room.
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "96mb", "--maxmemory-policy", "noeviction"]
+    restart: unless-stopped
+    mem_limit: 128m
+    volumes:
+      - redis_data:/data
+    networks:
+      - neptune
+
+  neptune-meilisearch:
+    image: getmeili/meilisearch:v1.6
+    container_name: neptune-meilisearch
+    env_file: meilisearch.env
+    environment:
+      MEILI_ENV: production
+      MEILI_NO_ANALYTICS: "true"
+      MEILI_MAX_INDEXING_MEMORY: 128Mb
+      MEILI_MAX_INDEXING_THREADS: "1"
+    restart: unless-stopped
+    mem_limit: 256m
+    volumes:
+      - meilisearch_data:/meili_data
+    networks:
+      - neptune
+
+  # The only container with published ports. 7443 is the API and 7444 the
+  # admin console. Ports 80 and 443 stay free so certbot can renew in
+  # standalone mode, for this stack and for Regency's certificate.
+  neptune-proxy:
+    image: nginx:1.27-alpine
+    container_name: neptune-proxy
+    restart: unless-stopped
+    mem_limit: 64m
+    ports:
+      - "7443:7443"
+      - "7444:7444"
+    volumes:
+      - ./nginx/neptune.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/allowlist.conf:/etc/nginx/allowlist.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - neptune-api
+      - neptune-admin
+    networks:
+      - neptune
+
+networks:
+  neptune:
+    name: neptune
+    ipam:
+      config:
+        # Clear of Docker's default 172.17 and Regency's 172.18, and inside
+        # the 172.16.0.0/12 range the firewall lets reach host Postgres.
+        - subnet: 172.30.0.0/24
+
+volumes:
+  redis_data:
+  meilisearch_data:

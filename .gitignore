@@ -1,3 +1,8 @@
 .env
 *.log
 node_modules/
+
+# Dev server settings and allowlist, written on the server only
+deploy/dev/*.env
+deploy/dev/nginx/allowlist.conf
+.DS_Store
