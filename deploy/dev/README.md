@@ -51,7 +51,12 @@ Run as root on the server.
 
         cp nginx/allowlist.conf.example nginx/allowlist.conf
 
-   and edit it to match `ADMIN_IP_ALLOWLIST`.
+   and edit it to match `ADMIN_IP_ALLOWLIST`. To add someone later, add
+   their address to both, then run
+   `docker compose up -d --force-recreate neptune-admin neptune-admin-worker`
+   and `docker compose restart neptune-proxy` (a reload is not enough: the
+   file is mounted on its own and the proxy keeps the old copy). Someone not
+   on the list sees a page with their address to send you.
 
 5. Create the database and its two roles:
 

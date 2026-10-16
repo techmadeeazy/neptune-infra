@@ -28,8 +28,9 @@ docker compose up -d --remove-orphans
 # hashed files left behind are small and harmless.
 docker compose cp neptune-admin:/var/www/html/public/build/. admin-build/
 
-# The proxy keeps no state, so reloading it picks up a renewed certificate
-# or an edited allowlist without dropping connections.
-docker compose exec neptune-proxy nginx -s reload
+# Restarted, not just reloaded: its config and allowlist are single-file
+# mounts, and a git pull or an edit that replaces the file leaves a running
+# container reading the old copy until it restarts. Takes about a second.
+docker compose restart neptune-proxy
 
 docker compose ps
