@@ -76,11 +76,13 @@ Run as root on the server.
    and a strong password (the console asks for 2FA set-up at first sign-in):
 
         docker compose exec neptune-admin php artisan tinker
-        >>> $a = App\Models\Identity\AdminUser::create(['name' => '...', 'email' => '...', 'password' => '...']);
+        >>> $a = new App\Models\Identity\AdminUser(['name' => '...', 'email' => '...', 'password' => '...']);
         >>> $a->forceFill(['role' => 'super_admin'])->save();
 
-   Role is kept out of mass assignment on purpose, hence `forceFill`. The
-   tinker history goes when the container is recreated.
+   Role is kept out of mass assignment on purpose and cannot be empty, so
+   the account is built with `new` and saved once with the role set
+   (`create()` would try to save it without one). The tinker history goes
+   when the container is recreated.
 
 10. Add the scheduler, which runs every minute:
 
