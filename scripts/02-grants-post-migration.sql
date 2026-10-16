@@ -21,10 +21,17 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON kyc_documents TO neptune_api_role;
 GRANT SELECT ON vessel_types, tonnage_bands, dp_classes, operational_certifications TO neptune_api_role;
 
 -- Vessel draft CRUD (registration, rates, consumption declaration) lives in
--- neptune-api while a vessel is in draft. `vessels` is read-only here -
--- only neptune-admin ever writes it, on Stage 1 approval (PRD A1.5).
+-- neptune-api. The draft stays the owner's working copy after listing.
+-- neptune-admin writes `vessels` on approval (PRD A1.5); neptune-api may
+-- only change the columns that go live without review: the port location
+-- and the rates (decided 2026-10-16).
 GRANT SELECT, INSERT, UPDATE, DELETE ON vessel_drafts TO neptune_api_role;
 GRANT SELECT ON vessels TO neptune_api_role;
+GRANT UPDATE (
+    current_port_location, rate_currency, daily_hire_rate, fuel_rate_per_litre,
+    water_rate_per_litre, mobilization_fee, demobilization_fee, rate_visibility,
+    rate_notes, updated_at
+) ON vessels TO neptune_api_role;
 
 -- Owners upload/delete their own vessel photos, but never set status,
 -- rejection_reason, reviewed_by, or reviewed_at directly - that's the
