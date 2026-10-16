@@ -41,10 +41,11 @@ Run as root on the server.
 
    Then fill in the values marked "you set" in `api.env` and `admin.env`:
    Gmail SMTP user and app password, Termii key, the Cloudinary account
-   (the same in both files; in Cloudinary's security settings, allow
-   delivery of PDF files), the admin
-   allowlist, and the Vercel address in `CORS_ALLOWED_ORIGINS`,
-   `APP_PUBLIC_URL` and `OWNER_INVITATION_URL`.
+   (the same in both files), the admin allowlist, and the Vercel address
+   in `CORS_ALLOWED_ORIGINS`, `APP_PUBLIC_URL` and `OWNER_INVITATION_URL`.
+   Private files are stored on Cloudinary as raw files and opened through
+   signed download links, which work on the Free plan with no extra
+   setting (checked against the real account on 2026-10-16).
 
 4. Allow your addresses into the admin console:
 
