@@ -89,6 +89,9 @@ services:
     volumes:
       - ./nginx/neptune.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/allowlist.conf:/etc/nginx/allowlist.conf:ro
+      # The admin console's CSS and JS, copied out of the admin image by
+      # deploy.sh, since nginx serves static files and PHP-FPM cannot.
+      - ./admin-build:/var/www/admin/build:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - neptune-api

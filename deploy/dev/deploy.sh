@@ -20,7 +20,13 @@ docker compose run --rm --no-deps neptune-admin php artisan db:seed --force
 
 sudo -u postgres psql -v ON_ERROR_STOP=1 -q -d neptune < ../../scripts/02-grants-post-migration.sql
 
+mkdir -p admin-build
 docker compose up -d --remove-orphans
+
+# The proxy serves the admin's CSS and JS from here. Copied into the same
+# folder (not replacing it) so the proxy's mount keeps pointing at it; old
+# hashed files left behind are small and harmless.
+docker compose cp neptune-admin:/var/www/html/public/build/. admin-build/
 
 # The proxy keeps no state, so reloading it picks up a renewed certificate
 # or an edited allowlist without dropping connections.

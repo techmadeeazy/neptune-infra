@@ -6,3 +6,4 @@ node_modules/
 deploy/dev/*.env
 deploy/dev/nginx/allowlist.conf
 .DS_Store
+deploy/dev/admin-build/
