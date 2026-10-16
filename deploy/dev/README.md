@@ -31,8 +31,8 @@ Run as root on the server.
 
 2. Check out this repo:
 
-        git clone https://github.com/techmadeeazy/neptune-infra.git /var/www/html/neptune-infra
-        cd /var/www/html/neptune-infra/deploy/dev
+        git clone https://github.com/techmadeeazy/neptune-infra.git /var/www/html/neptune-platform/neptune-infra
+        cd /var/www/html/neptune-platform/neptune-infra/deploy/dev
 
 3. Write the settings files. Every secret is generated on the server and
    never printed:
@@ -90,7 +90,7 @@ Run as root on the server.
 Push to main in `neptune-api` or `neptune-admin`, wait for CI to push the
 image, then on the server:
 
-    cd /var/www/html/neptune-infra && git pull && ./deploy/dev/deploy.sh
+    cd /var/www/html/neptune-platform/neptune-infra && git pull && ./deploy/dev/deploy.sh
 
 `deploy.sh` pulls the images, runs migrations and the reference data
 seeders (both safe to repeat), applies `neptune-api`'s grants again,
