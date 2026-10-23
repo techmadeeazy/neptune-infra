@@ -120,3 +120,8 @@ GRANT SELECT, INSERT ON co_booking_offers TO neptune_api_role;
 -- reads one to check it was sent to the person accepting it, then asks
 -- neptune-admin to hand over the vessels. It never writes the table.
 GRANT SELECT ON owner_invitations TO neptune_api_role;
+
+-- PRD B0 saved searches and favourite vessels: the signed-in client or
+-- broker keeps, renames and removes their own.
+GRANT SELECT, INSERT, UPDATE, DELETE ON saved_searches TO neptune_api_role;
+GRANT SELECT, INSERT, DELETE ON favourite_vessels TO neptune_api_role;
