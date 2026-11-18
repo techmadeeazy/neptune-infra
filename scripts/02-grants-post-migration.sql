@@ -30,7 +30,7 @@ GRANT SELECT ON vessel_types, tonnage_bands, dp_classes, operational_certificati
 GRANT SELECT, INSERT, UPDATE, DELETE ON vessel_drafts TO neptune_api_role;
 GRANT SELECT ON vessels TO neptune_api_role;
 GRANT UPDATE (
-    current_port_location, port_id, at_sea, offshore_area_id, field_or_block, rate_currency, daily_hire_rate, fuel_rate_per_litre,
+    current_port_location, port_id, at_sea, offshore_area_id, field_or_block, rate_currency, daily_hire_rate, daily_hire_rate_min, daily_hire_rate_max, fuel_rate_per_litre,
     water_rate_per_litre, mobilization_fee, demobilization_fee, rate_visibility,
     rate_notes, owner_allows_co_booking, contact_user_id, verification_requested_at, updated_at
 ) ON vessels TO neptune_api_role;
