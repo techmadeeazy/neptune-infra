@@ -47,6 +47,9 @@ GRANT SELECT, INSERT, DELETE ON vessel_documents TO neptune_api_role;
 -- time it was sent: its review status is still neptune-admin's alone.
 GRANT UPDATE (sent_at, updated_at) ON vessel_documents TO neptune_api_role;
 GRANT SELECT ON document_types TO neptune_api_role;
+-- Documents the Neptune team waived for a vessel (ADR-19): neptune-admin
+-- writes them; the owner is shown them.
+GRANT SELECT ON vessel_document_waivers TO neptune_api_role;
 
 -- Owner-set standby/blocked periods (PRD A4) are created and removed in
 -- neptune-api. No UPDATE on purpose: a period is replaced by deleting it
