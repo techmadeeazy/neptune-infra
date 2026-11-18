@@ -43,6 +43,9 @@ GRANT SELECT, INSERT, DELETE ON vessel_photos TO neptune_api_role;
 -- neptune-admin's alone. document_types is admin-managed reference data,
 -- read-only here, same shape as the vessel classification tables.
 GRANT SELECT, INSERT, DELETE ON vessel_documents TO neptune_api_role;
+-- The owner sends a document saved as "Not sent yet" (ADR-17). Only the
+-- time it was sent: its review status is still neptune-admin's alone.
+GRANT UPDATE (sent_at, updated_at) ON vessel_documents TO neptune_api_role;
 GRANT SELECT ON document_types TO neptune_api_role;
 
 -- Owner-set standby/blocked periods (PRD A4) are created and removed in
