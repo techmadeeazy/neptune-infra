@@ -52,6 +52,12 @@ GRANT SELECT ON document_types TO neptune_api_role;
 -- writes them; the owner is shown them.
 GRANT SELECT ON vessel_document_waivers TO neptune_api_role;
 
+-- ADR-09: brokers ask for authority over a vessel and owners accept or
+-- decline in neptune-api; granting and revoking is neptune-admin's. The API
+-- also ends a pending request the broker withdraws.
+GRANT SELECT, INSERT ON broker_vessel_authorities TO neptune_api_role;
+GRANT UPDATE (status, owner_accepted_at, owner_declined_at, ended_at, updated_at) ON broker_vessel_authorities TO neptune_api_role;
+
 -- Owner-set standby/blocked periods (PRD A4) are created and removed in
 -- neptune-api. No UPDATE on purpose: a period is replaced by deleting it
 -- and adding a new one, so nothing can quietly move its dates around.
