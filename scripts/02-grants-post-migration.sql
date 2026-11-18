@@ -24,13 +24,13 @@ GRANT SELECT ON vessel_types, tonnage_bands, dp_classes, operational_certificati
 -- neptune-api. The draft stays the owner's working copy after listing.
 -- neptune-admin writes `vessels` on approval (PRD A1.5); neptune-api may
 -- only change the columns that go live without review: the port location
--- and the rates (decided 2026-10-16).
+-- and the rates (decided 2026-10-16), and the owner's co-booking choice.
 GRANT SELECT, INSERT, UPDATE, DELETE ON vessel_drafts TO neptune_api_role;
 GRANT SELECT ON vessels TO neptune_api_role;
 GRANT UPDATE (
     current_port_location, rate_currency, daily_hire_rate, fuel_rate_per_litre,
     water_rate_per_litre, mobilization_fee, demobilization_fee, rate_visibility,
-    rate_notes, updated_at
+    rate_notes, owner_allows_co_booking, updated_at
 ) ON vessels TO neptune_api_role;
 
 -- Owners upload/delete their own vessel photos, but never set status,
